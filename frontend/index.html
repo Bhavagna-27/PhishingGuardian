@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishingGuardian - Enterprise Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-split-card">
+            <!-- Left Side: Image & Branding -->
+            <div class="login-left">
+                <div class="login-brand">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>PhishingGuardian</span>
+                </div>
+                <div class="login-hero-text">
+                    <h2>Capturing Threats,<br>Securing Enterprises</h2>
+                </div>
+            </div>
+            
+            <!-- Right Side: Auth Form -->
+            <div class="login-right">
+                <h2 class="login-title">Create an account</h2>
+                <p class="login-subtitle">Secure your enterprise today.</p>
+                
+                <div id="login-error" class="login-error hidden"></div>
+                
+                <form class="dummy-form" onsubmit="event.preventDefault()">
+                    <div class="input-row">
+                        <input type="text" placeholder="First name" class="login-input">
+                        <input type="text" placeholder="Last name" class="login-input">
+                    </div>
+                    <input type="email" placeholder="Email address" class="login-input w-full mt-3">
+                    <input type="password" placeholder="Enter your password" class="login-input w-full mt-3">
+                    
+                    <div class="terms-row mt-3">
+                        <input type="checkbox" id="terms" checked>
+                        <label for="terms">I agree to the <a href="#">Terms & Conditions</a></label>
+                    </div>
+                    
+                    <button class="btn-primary w-full mt-4" style="padding: 12px; font-size: 1rem; border-radius: 8px;">Create account</button>
+                </form>
+
+                <div class="divider">
+                    <span>Or register with</span>
+                </div>
+
+                <div class="social-login">
+                    <button id="btn-login" class="btn-social">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                        Google
+                    </button>
+                    <button class="btn-social" onclick="alert('Apple Sign-In coming soon!')">
+                        <i class="fa-brands fa-apple" style="font-size: 1.2rem; margin-bottom: 2px;"></i>
+                        Apple
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="app-container hidden" id="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>PhishingGuardian</span>
+            </div>
+            <nav>
+                <a href="#" class="nav-item active" data-target="dashboard-view">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-target="scanner-view">
+                    <i class="fa-solid fa-radar"></i> Threat Scanner
+                </a>
+                <a href="#" class="nav-item" data-target="history-view">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Threat Logs
+                </a>
+                <a href="#" class="nav-item" data-target="settings-view">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </a>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar" id="user-avatar">?</div>
+                <div class="user-info">
+                    <strong id="user-name">Loading...</strong>
+                    <span id="user-email">Please wait</span>
+                </div>
+                <button id="btn-logout" class="btn btn-outline btn-sm ml-auto" title="Sign Out"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h2 id="page-title">Dashboard</h2>
+                <div class="header-actions">
+                    <button class="btn btn-outline"><i class="fa-solid fa-bell"></i></button>
+                </div>
+            </header>
+
+            <div class="view-container">
+                <!-- Dashboard View -->
+                <div id="dashboard-view" class="view active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i class="fa-solid fa-envelope"></i></div>
+                            <div class="stat-details">
+                                <h3>Total Analyzed</h3>
+                                <p id="stat-total">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green"><i class="fa-solid fa-check-circle"></i></div>
+                            <div class="stat-details">
+                                <h3>Safe Traffic</h3>
+                                <p id="stat-safe">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red"><i class="fa-solid fa-skull-crossbones"></i></div>
+                            <div class="stat-details">
+                                <h3>Threats Blocked</h3>
+                                <p id="stat-threats">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container card mt-4">
+                        <h3>Threat Detection Trend</h3>
+                        <canvas id="threatChart" height="80"></canvas>
+                    </div>
+                </div>
+
+                <!-- Scanner View -->
+                <div id="scanner-view" class="view">
+                    <div class="scanner-layout">
+                        <div class="scanner-form-card card">
+                            <h3>Universal Threat Scanner</h3>
+                            <p class="subtitle">Run URL extraction, Web3 checks, and XAI highlighting.</p>
+                            
+                            <div class="setting-item" style="margin-bottom: 20px; background: rgba(0,0,0,0.2);">
+                                <div class="setting-info">
+                                    <h4 style="font-size: 0.95rem;">Web3 Drainer Defense <span style="font-size: 0.7rem; color: #f59e0b; margin-left: 8px;">EXPERIMENTAL</span></h4>
+                                    <p style="font-size: 0.8rem;">Silently simulates smart contract transactions to block drainers.</p>
+                                </div>
+                                <label class="toggle-switch" style="transform: scale(0.8);">
+                                    <input type="checkbox" id="web3-toggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <form id="analyze-form">
+                                <div class="form-group">
+                                    <label>Sender Address (Spoofing Check)</label>
+                                    <input type="email" id="sender" placeholder="e.g., support@paypal.xyz">
+                                </div>
+                                <div class="form-group">
+                                    <label>Subject Line</label>
+                                    <input type="text" id="subject" placeholder="e.g., URGENT: Action Required">
+                                </div>
+                                <div class="form-group">
+                                    <label>Raw Payload (Email Body or URL)</label>
+                                    <textarea id="body" rows="6" placeholder="Paste full message content or suspicious URL here..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-full" id="analyze-btn">
+                                    <span class="btn-text">Execute Threat Analysis</span>
+                                    <span class="spinner hidden"></span>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <div class="scanner-result-card card">
+                            <h3>Forensic Report</h3>
+                            <div id="empty-state" class="empty-state">
+                                <i class="fa-solid fa-microscope"></i>
+                                <p>Awaiting payload for analysis.</p>
+                            </div>
+
+                            <div id="result-content" class="result-content hidden">
+                                <div class="verdict-banner" id="verdict-banner">
+                                    <i id="verdict-icon" class="fa-solid fa-shield-check"></i>
+                                    <span id="verdict-text">Safe</span>
+                                </div>
+                                
+                                <!-- Web3 Blocked State -->
+                                <div id="web3-block-state" class="web3-block-state hidden">
+                                    <i class="fa-solid fa-triangle-exclamation fa-beat-fade"></i>
+                                    <h3>CONNECTION SEVERED</h3>
+                                    <p>Simulated Smart Contract Execution: Malicious drainer detected. Wallet connection aborted.</p>
+                                </div>
+                                
+                                <div class="score-section" id="score-section">
+                                    <div class="score-header">
+                                        <span>AI Threat Score</span>
+                                        <span id="confidence-val">--</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div id="confidence-bar" class="progress-fill"></div>
+                                    </div>
+                                </div>
+
+                                <div class="xai-box mt-4" id="xai-box">
+                                    <h4>Explainable AI (XAI) Trace</h4>
+                                    <p class="subtitle" style="margin-bottom:8px">The AI flagged the following artifacts in the payload:</p>
+                                    <div id="xai-text" class="xai-text-render"></div>
+                                </div>
+
+                                <div class="indicators-box mt-4" id="indicators-box">
+                                    <h4>Detected Anomalies</h4>
+                                    <ul id="indicators-list"></ul>
+                                </div>
+
+                                <div class="ssl-cert-box mt-4 hidden" id="ssl-cert-box">
+                                    <h4><i class="fa-solid fa-lock"></i> SSL Certificate Identity</h4>
+                                    <div class="ssl-details">
+                                        <p><strong>Subject:</strong> <span id="ssl-subject"></span></p>
+                                        <p><strong>Issuer:</strong> <span id="ssl-issuer"></span></p>
+                                        <p><strong>Expires:</strong> <span id="ssl-expires"></span></p>
+                                    </div>
+                                    <button class="btn btn-outline btn-sm mt-3" id="download-pem-btn"><i class="fa-solid fa-download"></i> Download Raw .PEM</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History View -->
+                <div id="history-view" class="view">
+                    <div class="card p-0">
+                        <div class="table-header">
+                            <h3>Threat Logs</h3>
+                            <button class="btn btn-outline btn-sm" id="refresh-history"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Sender</th>
+                                        <th>Subject</th>
+                                        <th>Verdict</th>
+                                        <th>Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-tbody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
+                <div id="settings-view" class="view">
+                    <div class="card">
+                        <h3>SOC Platform Settings</h3>
+                        <p class="subtitle mb-4">Configure your enterprise threat detection modules.</p>
+                        
+                        <div class="setting-item" style="opacity: 0.5;">
+                            <div class="setting-info">
+                                <h4>General Settings</h4>
+                                <p>Additional platform configurations coming soon in v2.0.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Permission Modal -->
+    <div id="permission-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> Enable Active Defense?</h3>
+            <p>Enabling Web3 Defense requires PhishingGuardian to actively simulate transaction payloads from suspicious links. This will trigger massive block screens if a drainer is detected.</p>
+            <p class="mt-2 text-sm text-muted">Do you grant permission to enable real blocking?</p>
+            <div class="modal-actions mt-4">
+                <button class="btn btn-outline" id="btn-cancel-permission">Cancel</button>
+                <button class="btn btn-primary" id="btn-grant-permission">Grant Permission</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        
+        const firebaseConfig = {
+            projectId: "vikas-97a5f",
+            appId: "1:118535462521:web:88ea213e9b1208d1a1fea8",
+            storageBucket: "vikas-97a5f.firebasestorage.app",
+            apiKey: "AIzaSyAZldnyFVkjvxnwVGFGkKTneIcxR-Y7ifs",
+            authDomain: "vikas-97a5f.firebaseapp.com",
+            messagingSenderId: "118535462521",
+            measurementId: "G-JSWK51HFJW"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        window.firebaseAuth = { auth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut };
+    </script>
+    <script src="app.js" type="module"></script>
+</body>
+</html>
